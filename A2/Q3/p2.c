@@ -31,7 +31,6 @@ int main()
             printf("P2 reading from pipe of P1: %s\n",temp);
             printf("P2 forwarding to P3 ....\n"); 
             write(pfd1[1],temp,sizeof(temp));
-            if(strlen(temp) == 0) break;
 
             char temp2[100];
             read(pfd2[0],temp2,sizeof(temp2));
@@ -39,7 +38,7 @@ int main()
             printf("P2 reading from pipe of P3: %s\n",temp2);
             printf("P2 forwarding to P1 ....\n "); 
             write(wd,temp2,sizeof(temp2));
-            if(strlen(temp2) == 0) break;
+            
         }
         close(pfd1[1]);
         close(pfd2[0]);

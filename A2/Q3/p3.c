@@ -22,8 +22,9 @@ int main()
         char msg[100];
         printf("P3 writing to P2: "); 
         fgets(msg, sizeof(msg),stdin);
-        write(wd,msg,sizeof(msg));
         if(strlen(msg) == 0) break;
+        write(wd,msg,sizeof(msg));
+        
     }
     close(rd);
     close(wd);

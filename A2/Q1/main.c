@@ -47,9 +47,9 @@ int main()
             printf("P' reading from pipe: %s\n",temp);
             printf("P' writing to P: "); 
             fgets(msg2, sizeof(msg2), stdin);
-            
-            write(pfd2[1],msg2,sizeof(msg2));
             if(strlen(msg2) == 0) break;
+            write(pfd2[1],msg2,sizeof(msg2));
+            
         }
     }
     return 0;
