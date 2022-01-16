@@ -20,29 +20,38 @@ using namespace std;
 struct mymsg
 {
 	long mtype;
-	char mdata[2048];	
+	char mdata[100];	
 };
-long get_int(char s[], int n)
+int prevpid, nextpid;
+int fwdcnt = 3, revcnt = 3;
+void prev_handler(int sig, siginfo_t *info, void *context)
 {
-	long num = 0;
-	for(int i=0; i<n; i++)
-	{
-		int temp = s[i] - '0';
-		num = num*10 + temp;
-	}
-	cout<<num<<endl;
-	return num;
+    prevpid = info->si_pid;
+    cout<<"previous process pid: "<<prevpid<<endl;
 }
-int returned_pid;
-void get_pid(int sig, siginfo_t *info, void *context)
+void next_handler()
 {
-    returned_pid = info->si_pid;
+    cout<<"next process pid: "<<nextpid<<endl;
+}
+void fwdsignaling(int signo)
+{
+    fwdcnt--;
+    if(fwdcnt == -1) return;
+    kill(nextpid,SIGUSR1);
+    cout<<"P1->P2"<<endl;
+}
+void revsignaling(int signo)
+{
+    revcnt--;
+    if(revcnt == -1) return;
+    kill(prevpid,SIGUSR2);
+    cout<<"P1->P4"<<endl;
 }
 int main()
 {
-    int pid = getpid(), prevpid, nextpid;
+    int pid = getpid();
     cout<<"P1(pid): "<<pid<<endl;
-    key_t key = 1234;
+    key_t key = ftok("green",32);
     int msqid = msgget(key,0666|IPC_CREAT);
     if(msqid == -1) 
     {
@@ -56,15 +65,23 @@ int main()
         exit(1);
     }
     else {
-        nextpid = get_int(msg.mdata, strlen(msg.mdata));
-        cout<<"Next pid: "<<nextpid<<endl;
+        nextpid = stoi(string(msg.mdata));
+        next_handler();
         if(kill(nextpid,SIGUSR1) == 0)
-            cout<<"P1 send SIGUSR1 to P"<<msg.mtype<<endl;
+            cout<<"P1 sent SIGUSR1 to P2 succcessfully"<<endl;
     }
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = get_pid;
+    sa.sa_sigaction = prev_handler;
     sigaction(SIGUSR1,&sa,NULL);
-    prevpid = returned_pid;
-    cout<<"Previous ID: "<<prevpid<<endl;
+    pause();
+    
+    kill(nextpid,SIGUSR1);
+    signal(SIGUSR1, fwdsignaling);
+    while(fwdcnt) pause();
+
+    signal(SIGUSR2, revsignaling);
+    kill(prevpid,SIGUSR2);
+    while(revcnt) pause();
+
 }
