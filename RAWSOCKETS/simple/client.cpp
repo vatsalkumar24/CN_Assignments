@@ -23,7 +23,7 @@ int main()
     int sfd;
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
-    if ((sfd = socket(AF_INET, SOCK_RAW, 2)) < 0)
+    if ((sfd = socket(AF_INET, SOCK_RAW, 17)) < 0)
     {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
